@@ -1,5 +1,6 @@
 using UnityEngine;
-
+using UnityEngine.SceneManagement;
+using System.Collections;
 // Include the namespace required to use Unity UI and Input System
 using UnityEngine.InputSystem;
 using TMPro;
@@ -18,6 +19,8 @@ public class PlayerController : MonoBehaviour
 	private float movementX;
 	private float movementY;
 
+	private Vector3 spawn;
+
 	private Rigidbody rb;
 	private int count;
 	private GameObject[] Pickups;
@@ -30,8 +33,8 @@ public class PlayerController : MonoBehaviour
 
 		// Set the count to zero 
 		count = 0;
-
-		SetCountText();
+		Transform tr = GetComponent<Transform>();
+		spawn = tr.position;
 
 		Pickups = GameObject.FindGameObjectsWithTag("PickUp");
 
@@ -39,8 +42,33 @@ public class PlayerController : MonoBehaviour
 
 		// Set the text property of the Win Text UI to an empty string, making the 'You Win' (game over message) blank
 		winTextObject.SetActive(false);
+
+		SetCountText();
 	}
-    void FixedUpdate()
+
+	void SetCountText()
+	{
+		countText.text = "Count: " + count.ToString();
+		if (count >= numberOfPickUps)
+		{
+			// Set the text value of your 'winText'
+			winTextObject.SetActive(true);
+			Invoke("NextScene", 3f);
+		}
+	}
+
+	private void NextScene()
+	{
+        if ((SceneManager.GetActiveScene().buildIndex + 1).Equals(SceneManager.sceneCountInBuildSettings))
+        {
+			SceneManager.LoadScene(0);
+		} else
+        {
+			SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex + 1);
+		}
+		
+	}
+	void FixedUpdate()
 	{
 		// Create a Vector3 variable, and assign X and Z to feature the horizontal and vertical float variables above
 		Vector3 movement = new Vector3(movementX, 0.0f, movementY);
@@ -93,28 +121,12 @@ public class PlayerController : MonoBehaviour
 		count = 0;
 		SetCountText();
 		Transform tr = GetComponent<Transform>();
-		tr.position = new Vector3(0, 1, 0);
+		tr.position = spawn;
 		rb.velocity = new Vector3(0, 0, 0);
 		//NOTA quitar fuerza a la bola para que no se mueva al hacer spawn
 		foreach (GameObject go in Pickups)
 		{
 			go.SetActive(true);
-		}
-	}
-
-	void SetCountText()
-	{
-		countText.text = "Count: " + count.ToString();
-		
-
-		if (count >= numberOfPickUps)
-		{
-			// Set the text value of your 'winText'
-			winTextObject.SetActive(true);
-		}
-        else
-        {
-			winTextObject.SetActive(false);
 		}
 	}
 }
